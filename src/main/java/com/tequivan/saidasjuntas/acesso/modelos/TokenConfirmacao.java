@@ -12,8 +12,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Entity
-@Data
 @AllArgsConstructor
+@Data
 public class TokenConfirmacao {
 	@Id
 	@Column(nullable = false, unique = true)
@@ -22,6 +22,5 @@ public class TokenConfirmacao {
 	@Column(nullable = false, unique = true)
 	private String token;
 	@OneToOne(fetch = FetchType.EAGER, targetEntity = Usuario.class)
-	@Column(unique = true)
 	private Usuario usuario;
 }

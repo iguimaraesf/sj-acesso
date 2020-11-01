@@ -9,7 +9,6 @@ import com.tequivan.saidasjuntas.acesso.modelos.Usuario;
 
 @Repository
 public interface UsuarioRepository extends CrudRepository<Usuario, String> {
-	boolean existsByNumeroDocumento(String numeroDocumento);
 	boolean existsByEmail(String email);
-	Optional<Usuario> findByEmailOrNumeroDocumento(String emailOuDocumento);
+	Optional<Usuario> findByEmail(String email);
 }

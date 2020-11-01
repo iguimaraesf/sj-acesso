@@ -27,8 +27,6 @@ public class Usuario {
 	@GenericGenerator(name = "uuid", strategy = "uuid")
 	@Column(length = 32)
 	private String usuarioId;
-	@Column(length = 32, nullable = false, unique = true)
-	private String numeroDocumento; // cpf, rne, ssn, passaporte...
 	@Column(length = 255, nullable = false)
 	private String nome;
 	@Column(length = 255, nullable = false, unique = true)

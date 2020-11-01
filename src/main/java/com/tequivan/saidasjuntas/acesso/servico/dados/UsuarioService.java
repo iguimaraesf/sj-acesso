@@ -9,7 +9,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
 import com.tequivan.saidasjuntas.acesso.excecao.AbstractSaidasException;
-import com.tequivan.saidasjuntas.acesso.excecao.DocumentoJaExisteException;
 import com.tequivan.saidasjuntas.acesso.excecao.EmailJaExisteException;
 import com.tequivan.saidasjuntas.acesso.excecao.TokenJaValidadoException;
 import com.tequivan.saidasjuntas.acesso.excecao.UsuarioInativoException;
@@ -36,9 +35,6 @@ public class UsuarioService {
 	}
 	
 	public Usuario novoUsuario(Usuario usuario) throws AbstractSaidasException {
-		if (repository.existsByNumeroDocumento(usuario.getNumeroDocumento())) {
-			throw new DocumentoJaExisteException(usuario.getNumeroDocumento());
-		}
 		if (repository.existsByEmail(usuario.getEmail())) {
 			throw new EmailJaExisteException(usuario.getEmail());
 		}
@@ -51,8 +47,9 @@ public class UsuarioService {
 	}
 	
 	public Usuario lerUsuario(String emailOuDocumento) throws AbstractSaidasException {
-		Usuario usuario = repository.findByEmailOrNumeroDocumento(emailOuDocumento)
+		Usuario usuario = repository.findByEmail(emailOuDocumento)
 				.orElseThrow(() -> new UsuarioNaoEncontrado(emailOuDocumento));
+
 		if (tokenRep.existsByUsuario(usuario)) {
 			throw new UsuarioNaoConfirmadoException(emailOuDocumento);
 		}
