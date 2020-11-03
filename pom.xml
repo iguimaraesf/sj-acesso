@@ -9,7 +9,7 @@
 		<version>2.3.4.RELEASE</version>
 		<relativePath /> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.tequivan.saidasjuntas</groupId>
+	<groupId>com.ivantex.saidasjuntas</groupId>
 	<artifactId>sj-acesso</artifactId>
 	<version>1.0.0</version>
 	<name>sj-acesso</name>
