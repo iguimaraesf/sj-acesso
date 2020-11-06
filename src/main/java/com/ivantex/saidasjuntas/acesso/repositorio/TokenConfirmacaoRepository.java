@@ -11,4 +11,5 @@ public interface TokenConfirmacaoRepository extends CrudRepository<TokenConfirma
 	TokenConfirmacao findByToken(String token);
 	TokenConfirmacao findByUsuario(Usuario usuario);
 	boolean existsByUsuario(Usuario usuario);
+	void deleteByUsuario(Usuario usuario);
 }
