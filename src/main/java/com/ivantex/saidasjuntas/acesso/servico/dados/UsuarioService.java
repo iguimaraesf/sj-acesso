@@ -65,10 +65,7 @@ public class UsuarioService {
 	}
 
 	public void confirmarUsuario(String codigo) throws AbstractSaidasException {
-		TokenConfirmacao token = tokenRep.findByToken(codigo);
-		if (token == null) {
-			throw new TokenInvalidoException(codigo);
-		}
+		TokenConfirmacao token = tokenRep.findByToken(codigo).orElseThrow(() -> new TokenInvalidoException(codigo));
 		tokenRep.delete(token);
 	}
 
@@ -82,33 +79,32 @@ public class UsuarioService {
 		if (usuario.getDataInativacao() != null) {
 			throw new UsuarioInativoException(email);
 		}
-		if (usuario.getDataFimSuspensao() != null && ChronoUnit.DAYS.between(LocalDate.now(), usuario.getDataFimSuspensao()) > 0) {
+		if (usuario.getDataFimSuspensao() != null && ChronoUnit.DAYS.between(LocalDate.now(), usuario.getDataFimSuspensao()) >= 0) {
 			throw new UsuarioSuspensoException(email, usuario.getDataFimSuspensao());
 		}
-		String senhaCripto = senhaConfig.encoder().encode(senha);
-		if (!senhaCripto.equals(usuario.getSenha())) {
+		if (!senhaConfig.encoder().matches(senha, usuario.getSenha())) {
 			throw new UsuarioNaoEncontradoException(email);
 		}
 		return usuario;
 	}
 
-	public void inativar(String id) throws AbstractSaidasException {
-		Usuario usuario = usuarioRep.findById(id)
-				.orElseThrow(() -> new UsuarioNaoEncontradoException(id));
+	public void inativar(String usuarioId) throws AbstractSaidasException {
+		Usuario usuario = usuarioRep.findById(usuarioId)
+				.orElseThrow(() -> new UsuarioNaoEncontradoException(usuarioId));
 		usuario.setDataInativacao(LocalDate.now());
 		usuarioRep.save(usuario);
 	}
 
-	public void reativar(String id) throws AbstractSaidasException {
-		Usuario usuario = usuarioRep.findById(id)
-				.orElseThrow(() -> new UsuarioNaoEncontradoException(id));
+	public void reativar(String usuarioId) throws AbstractSaidasException {
+		Usuario usuario = usuarioRep.findById(usuarioId)
+				.orElseThrow(() -> new UsuarioNaoEncontradoException(usuarioId));
 		usuario.setDataInativacao(null);
 		usuarioRep.save(usuario);
 	}
 	
-	public void suspender(String id) throws AbstractSaidasException {
-		Usuario usuario = usuarioRep.findById(id)
-				.orElseThrow(() -> new UsuarioNaoEncontradoException(id));
+	public void suspender(String usuarioId) throws AbstractSaidasException {
+		Usuario usuario = usuarioRep.findById(usuarioId)
+				.orElseThrow(() -> new UsuarioNaoEncontradoException(usuarioId));
 		usuario.setDataFimSuspensao(LocalDate.now().plusDays(15));
 		usuarioRep.save(usuario);
 	}

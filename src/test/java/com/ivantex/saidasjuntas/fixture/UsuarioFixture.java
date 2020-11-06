@@ -1,5 +1,13 @@
 package com.ivantex.saidasjuntas.fixture;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
+
+import org.junit.jupiter.api.TestInfo;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import com.fasterxml.jackson.datatype.jsr310.ser.MonthDaySerializer;
 import com.ivantex.saidasjuntas.acesso.dto.UsuarioDTO;
 import com.ivantex.saidasjuntas.acesso.modelos.Usuario;
 
@@ -20,11 +28,26 @@ public class UsuarioFixture {
 		return criarUsuarioDTOPersonalizado("João da Silva", "joao@gmail.com");
 	}
 
-	public static Usuario criarUsuario(UsuarioDTO usuario) {
+	public static Usuario criarUsuario(TestInfo info, UsuarioDTO usuario, PasswordEncoder encoder) {
 		final Usuario usuarioX = new Usuario();
 		usuarioX.setNome(usuario.getNome());
 		usuarioX.setEmail(usuario.getEmail());
-		usuarioX.setSenha("$2a$10$WbO163R/LKQcNFnu48T44OPyOdeqPd4zFecKHLLG3cOJ0NDSVMrfe");
+		if (TagSaida.temTag(info, TagSaida.USUARIO_SENHA_ERRADA)) {
+			usuarioX.setSenha(encoder.encode("123"));
+		} else {
+			usuarioX.setSenha(encoder.encode(usuario.getSenha()));
+		}
+		if (TagSaida.temTag(info, TagSaida.USUARIO_INATIVO)) {
+			usuarioX.setDataInativacao(LocalDate.now());
+		}
+		if (TagSaida.temTag(info, TagSaida.USUARIO_ESTA_SUSPENSO)) {
+			usuarioX.setDataFimSuspensao(LocalDate.now());
+		} else if (TagSaida.temTag(info, TagSaida.USUARIO_ESTEVE_SUSPENSO)) {
+			usuarioX.setDataFimSuspensao(LocalDate.now().minusDays(1L));
+		}
+		if (TagSaida.temTag(info, TagSaida.USUARIO_ENCONTRADO_POR_ID)) {
+			usuarioX.setUsuarioId("1111-xxxx");
+		}
 		return usuarioX;
 	}
 
