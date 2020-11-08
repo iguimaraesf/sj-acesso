@@ -18,10 +18,12 @@ public class FuncionalidadeService {
 	}
 
 	public void completarComFuncionalidadesPadrao(List<Funcionalidade> privilegios) {
-		adicionarQuandoNaoExistir(privilegios, ConstFuncionalidade.BD_FUNC_PARTICIPAR_EVENTO);
-		adicionarQuandoNaoExistir(privilegios, ConstFuncionalidade.BD_FUNC_AVALIAR_EVENTO);
-		adicionarQuandoNaoExistir(privilegios, ConstFuncionalidade.BD_FUNC_AVALIAR_PARTICIPANTE);
-		adicionarQuandoNaoExistir(privilegios, ConstFuncionalidade.BD_FUNC_ORGANIZAR_EVENTO);
+		adicionarQuandoNaoExistir(privilegios, ConstFuncionalidade.KEY_FUNC_AVALIAR_EVENTO);
+		adicionarQuandoNaoExistir(privilegios, ConstFuncionalidade.KEY_FUNC_AVALIAR_PARTICIPANTE);
+		adicionarQuandoNaoExistir(privilegios, ConstFuncionalidade.KEY_FUNC_DENUNCIAR_EVENTO);
+		adicionarQuandoNaoExistir(privilegios, ConstFuncionalidade.KEY_FUNC_DENUNCIAR_PARTICIPANTE);
+		adicionarQuandoNaoExistir(privilegios, ConstFuncionalidade.KEY_FUNC_ORGANIZAR_EVENTO);
+		adicionarQuandoNaoExistir(privilegios, ConstFuncionalidade.KEY_FUNC_PARTICIPAR_EVENTO);
 	}
 
 	private Funcionalidade adicionarQuandoNaoExistir(List<Funcionalidade> privilegios, String nome) {

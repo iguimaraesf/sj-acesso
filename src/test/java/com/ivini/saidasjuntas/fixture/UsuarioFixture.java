@@ -29,22 +29,23 @@ public class UsuarioFixture {
 		final Usuario usuarioX = new Usuario();
 		usuarioX.setNome(usuario.getNome());
 		usuarioX.setEmail(usuario.getEmail());
-		if (TagSaida.temTag(info, TagSaida.USUARIO_SENHA_ERRADA)) {
+		if (TagSaida.temTag(info, TagSaida.MD_USUARIO_SENHA_ERRADA)) {
 			usuarioX.setSenha(encoder.encode("123"));
 		} else {
 			usuarioX.setSenha(encoder.encode(usuario.getSenha()));
 		}
-		if (TagSaida.temTag(info, TagSaida.USUARIO_INATIVO)) {
+		if (TagSaida.temTag(info, TagSaida.MD_USUARIO_INATIVO)) {
 			usuarioX.setDataInativacao(LocalDate.now());
 		}
-		if (TagSaida.temTag(info, TagSaida.USUARIO_ESTA_SUSPENSO)) {
+		if (TagSaida.temTag(info, TagSaida.MD_USUARIO_ESTA_SUSPENSO)) {
 			usuarioX.setDataFimSuspensao(LocalDate.now());
-		} else if (TagSaida.temTag(info, TagSaida.USUARIO_ESTEVE_SUSPENSO)) {
+		} else if (TagSaida.temTag(info, TagSaida.MD_USUARIO_ESTEVE_SUSPENSO)) {
 			usuarioX.setDataFimSuspensao(LocalDate.now().minusDays(1L));
 		}
-		if (TagSaida.temTag(info, TagSaida.USUARIO_ENCONTRADO_POR_ID)) {
+		if (TagSaida.temTag(info, TagSaida.BD_USUARIO_ENCONTRADO_POR_ID)) {
 			usuarioX.setUsuarioId("1111-xxxx");
 		}
+		usuarioX.setCargos(CargoFixture.criarLista(info));
 		return usuarioX;
 	}
 

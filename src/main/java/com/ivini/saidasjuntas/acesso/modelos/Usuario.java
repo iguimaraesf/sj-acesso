@@ -17,6 +17,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import lombok.Data;
 
 @Entity
@@ -32,14 +34,20 @@ public class Usuario {
 	@Column(length = 255, nullable = false, unique = true)
 	private String email;
 	@Column(length = 25, nullable = false)
+	@JsonIgnore
 	private String senha;
+	@JsonIgnore
 	private LocalDate dataFimSuspensao;
+	@JsonIgnore
 	private LocalDate dataInativacao;
 	@CreationTimestamp
+	@JsonIgnore
 	private LocalDateTime dataCriacao;
 	@UpdateTimestamp
+	@JsonIgnore
 	private LocalDateTime dataAtualizacao;
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.MERGE, CascadeType.PERSIST })
+	@JsonIgnore
 	private List<Cargo> cargos;
 
 	@PreRemove

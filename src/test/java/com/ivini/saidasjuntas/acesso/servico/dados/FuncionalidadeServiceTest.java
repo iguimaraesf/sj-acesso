@@ -23,6 +23,8 @@ import com.ivini.saidasjuntas.fixture.TagSaida;
 
 @ExtendWith(MockitoExtension.class)
 class FuncionalidadeServiceTest {
+	private static final int PERMISSOES_PADRAO = 6;
+
 	private List<Funcionalidade> privilegios;
 
 	@Mock
@@ -33,17 +35,16 @@ class FuncionalidadeServiceTest {
 	
 	@BeforeEach
 	void setUp(TestInfo info) {
-		mockFuncionalidade(info, TagSaida.FUNCIONALIDADE_ENCONTRA_PARTICIPAR_EVENTO, ConstFuncionalidade.BD_FUNC_PARTICIPAR_EVENTO);
-		mockFuncionalidade(info, TagSaida.FUNCIONALIDADE_ENCONTRA_AVALIAR_EVENTO, ConstFuncionalidade.BD_FUNC_AVALIAR_EVENTO);
-		mockFuncionalidade(info, TagSaida.FUNCIONALIDADE_ENCONTRA_AVALIAR_PARTICIPANTE, ConstFuncionalidade.BD_FUNC_AVALIAR_PARTICIPANTE);
-		mockFuncionalidade(info, TagSaida.FUNCIONALIDADE_ENCONTRA_ORGANIZAR_EVENTO, ConstFuncionalidade.BD_FUNC_ORGANIZAR_EVENTO);
+		mockFuncionalidade(info, TagSaida.BD_FUNCIONALIDADE_ENCONTRA_PARTICIPAR_EVENTO, ConstFuncionalidade.KEY_FUNC_PARTICIPAR_EVENTO);
+		mockFuncionalidade(info, TagSaida.BD_FUNCIONALIDADE_ENCONTRA_AVALIAR_EVENTO, ConstFuncionalidade.KEY_FUNC_AVALIAR_EVENTO);
+		mockFuncionalidade(info, TagSaida.BD_FUNCIONALIDADE_ENCONTRA_AVALIAR_PARTICIPANTE, ConstFuncionalidade.KEY_FUNC_AVALIAR_PARTICIPANTE);
+		mockFuncionalidade(info, TagSaida.BD_FUNCIONALIDADE_DENUNCIAR_EVENTO, ConstFuncionalidade.KEY_FUNC_DENUNCIAR_EVENTO);
+		mockFuncionalidade(info, TagSaida.BD_FUNCIONALIDADE_DENUNCIAR_PARTICIPANTE, ConstFuncionalidade.KEY_FUNC_DENUNCIAR_PARTICIPANTE);
+		mockFuncionalidade(info, TagSaida.BD_FUNCIONALIDADE_ENCONTRA_ORGANIZAR_EVENTO, ConstFuncionalidade.KEY_FUNC_ORGANIZAR_EVENTO);
 		
 		privilegios = new ArrayList<>();
 		service.completarComFuncionalidadesPadrao(privilegios);
-		Mockito.verify(funcionalidadeRepository).findByNome(ConstFuncionalidade.BD_FUNC_AVALIAR_EVENTO);
-		Mockito.verify(funcionalidadeRepository).findByNome(ConstFuncionalidade.BD_FUNC_AVALIAR_PARTICIPANTE);
-		Mockito.verify(funcionalidadeRepository).findByNome(ConstFuncionalidade.BD_FUNC_ORGANIZAR_EVENTO);
-		Mockito.verify(funcionalidadeRepository).findByNome(ConstFuncionalidade.BD_FUNC_PARTICIPAR_EVENTO);
+		Mockito.verify(funcionalidadeRepository, Mockito.times(PERMISSOES_PADRAO)).findByNome(Mockito.anyString());
 	}
 
 	private void mockFuncionalidade(TestInfo info, String tag, String nome) {
@@ -58,44 +59,44 @@ class FuncionalidadeServiceTest {
 
 	@Test
 	void semFuncionalidades() {
-		assertThat(privilegios).hasSize(4);
+		assertThat(privilegios).hasSize(PERMISSOES_PADRAO);
 	}
 
 	@Tags({
-		@Tag(TagSaida.FUNCIONALIDADE_ENCONTRA_PARTICIPAR_EVENTO),
+		@Tag(TagSaida.BD_FUNCIONALIDADE_ENCONTRA_PARTICIPAR_EVENTO),
 	})
 	@Test
 	void temFuncionalidadeParticiparEvento() {
-		assertThat(privilegios).hasSize(4);
+		assertThat(privilegios).hasSize(PERMISSOES_PADRAO);
 	}
 
 	@Tags({
-		@Tag(TagSaida.FUNCIONALIDADE_ENCONTRA_PARTICIPAR_EVENTO),
-		@Tag(TagSaida.FUNCIONALIDADE_ENCONTRA_AVALIAR_EVENTO),
+		@Tag(TagSaida.BD_FUNCIONALIDADE_ENCONTRA_PARTICIPAR_EVENTO),
+		@Tag(TagSaida.BD_FUNCIONALIDADE_ENCONTRA_AVALIAR_EVENTO),
 	})
 	@Test
 	void temFuncionalidadesParticiparEventoEAvaliarEvento() {
-		assertThat(privilegios).hasSize(4);
+		assertThat(privilegios).hasSize(PERMISSOES_PADRAO);
 	}
 
 	@Tags({
-		@Tag(TagSaida.FUNCIONALIDADE_ENCONTRA_PARTICIPAR_EVENTO),
-		@Tag(TagSaida.FUNCIONALIDADE_ENCONTRA_AVALIAR_EVENTO),
-		@Tag(TagSaida.FUNCIONALIDADE_ENCONTRA_AVALIAR_PARTICIPANTE),
+		@Tag(TagSaida.BD_FUNCIONALIDADE_ENCONTRA_PARTICIPAR_EVENTO),
+		@Tag(TagSaida.BD_FUNCIONALIDADE_ENCONTRA_AVALIAR_EVENTO),
+		@Tag(TagSaida.BD_FUNCIONALIDADE_ENCONTRA_AVALIAR_PARTICIPANTE),
 	})
 	@Test
 	void temFuncionalidadesParticiparEventoAvaliarEventoEAvaliarParticipante() {
-		assertThat(privilegios).hasSize(4);
+		assertThat(privilegios).hasSize(PERMISSOES_PADRAO);
 	}
 
 	@Tags({
-		@Tag(TagSaida.FUNCIONALIDADE_ENCONTRA_PARTICIPAR_EVENTO),
-		@Tag(TagSaida.FUNCIONALIDADE_ENCONTRA_AVALIAR_EVENTO),
-		@Tag(TagSaida.FUNCIONALIDADE_ENCONTRA_AVALIAR_PARTICIPANTE),
-		@Tag(TagSaida.FUNCIONALIDADE_ENCONTRA_ORGANIZAR_EVENTO),
+		@Tag(TagSaida.BD_FUNCIONALIDADE_ENCONTRA_PARTICIPAR_EVENTO),
+		@Tag(TagSaida.BD_FUNCIONALIDADE_ENCONTRA_AVALIAR_EVENTO),
+		@Tag(TagSaida.BD_FUNCIONALIDADE_ENCONTRA_AVALIAR_PARTICIPANTE),
+		@Tag(TagSaida.BD_FUNCIONALIDADE_ENCONTRA_ORGANIZAR_EVENTO),
 	})
 	@Test
 	void temFuncionalidadesParticiparEventoAvaliarEventoAvaliarParticipanteEOrganizarEvento() {
-		assertThat(privilegios).hasSize(4);
+		assertThat(privilegios).hasSize(PERMISSOES_PADRAO);
 	}
 }

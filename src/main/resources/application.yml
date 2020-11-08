@@ -1,0 +1,22 @@
+logging:
+  level:
+    sql: debug
+spring:
+  datasource:
+    password: sj-acesso
+    url: jdbc:h2:mem:testdb
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  mail:
+    host: smtp.gmail.com
+    password: senha123mudar
+    port: 587
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    username: user@gmail.com

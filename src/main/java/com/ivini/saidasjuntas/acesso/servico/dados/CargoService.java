@@ -13,20 +13,20 @@ import com.ivini.saidasjuntas.acesso.repositorio.CargoRepository;
 
 @Service
 public class CargoService {
-	private final CargoRepository cargoRepository;
+	private final CargoRepository repository;
 	private final FuncionalidadeService funcionalidadeService;
 	
 	public CargoService(CargoRepository cargoRepository, FuncionalidadeService funcionalidadeService) {
-		this.cargoRepository = cargoRepository;
+		this.repository = cargoRepository;
 		this.funcionalidadeService = funcionalidadeService;
 	}
 
 	@Transactional
 	public List<Cargo> cargosUsuarioPadrao() {
-		Cargo cargo = cargoRepository.findByNome("bd:usuario-padrao")
-				.orElse(new Cargo(null, "bd:usuario-padrao", new ArrayList<>()));
+		Cargo cargo = repository.findByNome(ConstCargo.BD_CARGO_USUARIO_PADRAO)
+				.orElse(new Cargo(null, ConstCargo.BD_CARGO_USUARIO_PADRAO, new ArrayList<>()));
 		funcionalidadeService.completarComFuncionalidadesPadrao(cargo.getPrivilegios());
-		cargoRepository.save(cargo);
+		repository.save(cargo);
 		return Arrays.asList(cargo);
 	}
 
