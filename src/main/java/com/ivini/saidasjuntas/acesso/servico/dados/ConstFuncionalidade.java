@@ -1,5 +1,6 @@
 package com.ivini.saidasjuntas.acesso.servico.dados;
 
+@Deprecated
 public final class ConstFuncionalidade {
 	public static final String KEY_FUNC_ORGANIZAR_EVENTO = "bd:func:organizar-evento";
 	public static final String KEY_FUNC_AVALIAR_PARTICIPANTE = "bd:func:avaliar-participante";

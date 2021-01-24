@@ -2,17 +2,16 @@ package com.ivini.saidasjuntas.acesso.repositorio;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import com.ivini.saidasjuntas.acesso.modelos.Cargo;
-import com.ivini.saidasjuntas.acesso.modelos.Funcionalidade;
+import com.ivini.saidasjuntas.acesso.modelo.Cargo;
+import com.ivini.saidasjuntas.acesso.modelo.Funcionalidade;
 
 @DataJpaTest
 class CargoRepositoryTest {
@@ -24,43 +23,24 @@ class CargoRepositoryTest {
 	private Cargo res;
 	@BeforeEach
 	void setUp() {
-		final List<Funcionalidade> lista = new ArrayList<>();
-		lista.add(new Funcionalidade(null, "criar_usuario", null));
-		lista.add(new Funcionalidade(null, "listar_usuarios", null));
+		final Set<Funcionalidade> lista = new HashSet<>();
+		lista.add(new Funcionalidade(null, "criar_usuario"));
+		lista.add(new Funcionalidade(null, "listar_usuarios"));
 		final Cargo param = new Cargo(null, "O cargo", lista);
 		res = cargoRep.save(param);
 		assertThat(res).isNotNull();
 	}
 
 	@Test
-	void gravaCargoCom2FuncionalidadesComSucesso() {
-		final List<Funcionalidade> funcionalidades = funcionalidadeRep.findAllById(res.getPrivilegios().stream()
-				.map(Funcionalidade::getFuncionalidadeId)
-				.collect(Collectors.toList()));
-		
-		assertThat(funcionalidades).containsAll(res.getPrivilegios());
-	}
-	
-	@Test
 	void regravacaoNaoDeixaLinhasOrfans() {
-		final Cargo param = cargoRep.findById(res.getCargoId()).get();
-		final List<Funcionalidade> lista = new ArrayList<>();
-		lista.add(new Funcionalidade(null, "excluir_usuario", null));
+		final Cargo param = cargoRep.findById(res.getIdCargo()).get();
+		final Set<Funcionalidade> lista = new HashSet<>();
+		lista.add(new Funcionalidade(null, "excluir_usuario"));
 		param.setPrivilegios(lista);
 		final Cargo res1 = cargoRep.save(param);
 		
-		final Funcionalidade func = funcionalidadeRep.findById(res1.getPrivilegios().iterator().next().getFuncionalidadeId()).get();
+		final Funcionalidade func = funcionalidadeRep.findById(res1.getPrivilegios().iterator().next().getIdFuncionalidade()).get();
 		
 		assertThat(func.getNome()).isEqualTo("excluir_usuario");
-	}
-	
-	@Test
-	void excluirRelacao() {
-		res.getPrivilegios().remove(0);
-		funcionalidadeRep.deleteByNome("criar_usuario");
-		// funcionalidadeRep.flush();
-		final Cargo param = cargoRep.findById(res.getCargoId()).get();
-		assertThat(param.getPrivilegios()).hasSize(1);
-		assertThat(param.getPrivilegios().get(0).getNome()).isEqualTo("listar_usuarios");
 	}
 }

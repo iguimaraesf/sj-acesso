@@ -3,15 +3,16 @@ logging:
     sql: debug
 spring:
   datasource:
+    username: sa
     password: sj-acesso
-    url: jdbc:h2:mem:testdb
+    url: jdbc:h2:~/base-usuarios
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     show-sql: true
+    generate-ddl: true
   mail:
     host: smtp.gmail.com
-    password: senha123mudar
     port: 587
     properties:
       mail:
@@ -20,3 +21,13 @@ spring:
           starttls:
             enable: true
     username: user@gmail.com
+    password: senha123mudar
+  h2:
+    console:
+      enabled: true
+jwt:
+  secret: alta?Vista)1
+management:
+  endpoint:
+    health:
+      show-details: always

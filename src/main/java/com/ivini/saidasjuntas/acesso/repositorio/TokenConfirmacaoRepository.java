@@ -5,13 +5,10 @@ import java.util.Optional;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
-import com.ivini.saidasjuntas.acesso.modelos.TokenConfirmacao;
-import com.ivini.saidasjuntas.acesso.modelos.Usuario;
+import com.ivini.saidasjuntas.acesso.modelo.TokenConfirmacao;
 
 @Repository
-public interface TokenConfirmacaoRepository extends CrudRepository<TokenConfirmacao, Long> {
-	Optional<TokenConfirmacao> findByToken(String token);
-	Optional<TokenConfirmacao> findByUsuario(Usuario usuario);
-	boolean existsByUsuario(Usuario usuario);
-	void deleteByUsuario(Usuario usuario);
+public interface TokenConfirmacaoRepository extends CrudRepository<TokenConfirmacao, String> {
+	Optional<TokenConfirmacao> findByTokenGerado(String token);
+	Optional<TokenConfirmacao> findByUsuarioIdUsuario(String id);
 }
