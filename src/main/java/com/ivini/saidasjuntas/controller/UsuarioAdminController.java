@@ -64,8 +64,8 @@ public class UsuarioAdminController extends BaseSaidaController {
 		return mensagemSucesso(messageSource, locale, lista);
 	}
 	
-	@PatchMapping("/tornar/vendedor/{usuarioId}")
-	public ListaMensagensRetornoDTO tornarVendedor(@PathVariable String usuarioId, Locale locale) throws AbstractSaidasException {
-		return mensagemSucesso(messageSource, locale, service.associarVendedor(usuarioId));
+	@PatchMapping("/tornar/vendedor/{usuarioId}/{supervisorId}/{mensagem}")
+	public ListaMensagensRetornoDTO tornarVendedor(@PathVariable String usuarioId, @PathVariable String supervisorId, @PathVariable String mensagem, Locale locale) throws AbstractSaidasException {
+		return mensagemSucesso(messageSource, locale, service.associarVendedor(usuarioId, supervisorId, mensagem));
 	}
 }

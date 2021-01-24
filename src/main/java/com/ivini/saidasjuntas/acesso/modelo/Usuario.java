@@ -55,6 +55,9 @@ public class Usuario {
 	@ManyToOne(optional = true)
 	@JoinColumn(name = "id_empregador", nullable = true)
 	private Usuario empregador;
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "id_supervisor", nullable = true)
+	private Usuario supervisor;
 	@CreationTimestamp
 	@JsonIgnore
 	private LocalDateTime dataCriacao;

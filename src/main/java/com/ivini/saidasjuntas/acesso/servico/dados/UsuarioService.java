@@ -194,8 +194,12 @@ public class UsuarioService {
 	// tornar-comerciante
 	// meus-clientes
 	// meu-extrato
-	public String associarVendedor(String usuarioId) throws AbstractSaidasException {
+	public String associarVendedor(String usuarioId, String supervisorId, String mensagem) throws AbstractSaidasException {
 		Usuario usuario = buscarPorId(usuarioId);
+		if (usuario.getSupervisor() != null && !supervisorId.equals(usuario.getSupervisor().getIdUsuario())) {
+			throw new OutroResponsavelException(supervisorId);
+		}
+		usuario.setSupervisor(buscarPorId(supervisorId));
 		Set<Cargo> lista = Optional.ofNullable(usuario.getCargos()).orElse(new HashSet<>());
 		lista.add(lerCargoComFuncionalidades(DominioCargo.BD_FUNC_TORNAR_COMERCIANTE, 
 				DominioFuncionalidade.KEY_TORNAR_COMERCIANTE_ATIVAR, 
@@ -205,22 +209,28 @@ public class UsuarioService {
 				DominioFuncionalidade.KEY_MEUS_CLIENTES_ULTIMA_COMPRA,
 				DominioFuncionalidade.KEY_MEUS_CLIENTES_CONTATOS));
 		usuarioRep.save(usuario);
+		// TODO GRAVAR NO EXTRATO
 		return usuario.getIdUsuario();
 	}
 
-	public String desassociarVendedor(String usuarioId) throws AbstractSaidasException {
+	public String desassociarVendedor(String usuarioId, String supervisorId, String mensagem) throws AbstractSaidasException {
 		Usuario usuario = buscarPorId(usuarioId);
+		if (usuario.getSupervisor() != null && !supervisorId.equals(usuario.getEmpregador().getIdUsuario())) {
+			throw new OutroResponsavelException(supervisorId);
+		}
+		usuario.setSupervisor(null);
 		Set<Cargo> lista = Optional.ofNullable(usuario.getCargos()).orElse(new HashSet<>());
 		lista.remove(lerCargo(DominioCargo.BD_FUNC_TORNAR_COMERCIANTE));
 		lista.remove(lerCargo(DominioCargo.BD_FUNC_MEUS_CLIENTES));
 		usuarioRep.save(usuario);
+		// TODO GRAVAR NO EXTRATO
 		return usuario.getIdUsuario();
 	}
 
 	// validar-cupom
 	public String associarFuncionario(String usuarioId, String empregadorId) throws AbstractSaidasException {
 		Usuario usuario = buscarPorId(usuarioId);
-		if (usuario.getEmpregador() != null && !usuario.getEmpregador().getIdUsuario().equals(usuarioId)) {
+		if (usuario.getEmpregador() != null && !empregadorId.equals(usuario.getEmpregador().getIdUsuario())) {
 			throw new OutroResponsavelException(empregadorId);
 		}
 		usuario.setEmpregador(buscarPorId(empregadorId));
@@ -231,12 +241,13 @@ public class UsuarioService {
 				DominioFuncionalidade.KEY_VALIDAR_CUPOM_DIGITAR));
 
 		usuarioRep.save(usuario);
+		// TODO GRAVAR NO EXTRATO
 		return usuario.getIdUsuario();
 	}
 
 	public String desassociarFuncionario(String usuarioId, String empregadorId) throws AbstractSaidasException {
 		Usuario usuario = buscarPorId(usuarioId);
-		if (usuario.getEmpregador() != null && !usuario.getEmpregador().getIdUsuario().equals(usuarioId)) {
+		if (usuario.getEmpregador() != null && !empregadorId.equals(usuario.getEmpregador().getIdUsuario())) {
 			throw new OutroResponsavelException(empregadorId);
 		}
 		usuario.setEmpregador(null);
