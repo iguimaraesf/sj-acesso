@@ -12,12 +12,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.ivini.saidasjuntas.acesso.dto.CredenciaisDTO;
@@ -29,18 +27,14 @@ import com.ivini.saidasjuntas.config.SenhaConfig;
 import com.ivini.saidasjuntas.fixture.CredenciaisFixture;
 import com.ivini.saidasjuntas.fixture.EnvioEmailFixture;
 import com.ivini.saidasjuntas.fixture.JsonFixture;
-import com.ivini.saidasjuntas.fixture.TokenConfirmacaoFixture;
 import com.ivini.saidasjuntas.fixture.UsuarioFixture;
 import com.ivini.saidasjuntas.tag.TesteConstSaida;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class AbertoReenviarTokenTest extends BaseController {
+class AbertoReenviarTokenIT extends BaseController {
 	private static final String URL_REENVIAR = "/api/v1/aberto/reenviar";
 	private String jsonParam;
 
-	@Autowired
-	private MockMvc mockMvc;
 	@Autowired
 	private SenhaConfig senhaConfig;
 	@MockBean
@@ -52,7 +46,8 @@ class AbertoReenviarTokenTest extends BaseController {
 
 	@BeforeEach
 	void setUp(TestInfo info) throws JsonProcessingException, EnvioEmailException {
-		TokenConfirmacaoFixture.configurarRepositorio(info, tokenRep, senhaConfig);
+		UsuarioFixture.configurarRepositorioUsuarioEToken(info, senhaConfig, tokenRep, usuarioRep);
+		//TokenConfirmacaoFixture.configurarRepositorio(info, tokenRep, senhaConfig);
 		CredenciaisDTO cred = CredenciaisFixture.criar(info);
 		EnvioEmailFixture.configurarRepositorioCredenciais(info, envio, cred);
 		UsuarioFixture.configurarRepositorioCredenciais(info, usuarioRep, senhaConfig, cred);
@@ -61,13 +56,15 @@ class AbertoReenviarTokenTest extends BaseController {
 
 	@AfterEach
 	void tearDown(TestInfo info) throws EnvioEmailException {
-		TokenConfirmacaoFixture.verificarRepositorio(info, tokenRep);
+		// TokenConfirmacaoFixture.verificarRepositorio(info, tokenRep);
 		EnvioEmailFixture.verificarRepositorio(info, envio);
-		UsuarioFixture.verificarRepositorio(info, usuarioRep, tokenRep);
+		UsuarioFixture.verificarRepositorioRegistrar(info, usuarioRep, tokenRep);
 	}
 
 	@Tags({
 		@Tag(TesteConstSaida.BD_TOKEN_ERRO_FATAL),
+		@Tag(TesteConstSaida.BD_TOKEN_ENCONTRADO_POR_TOKEN),
+		@Tag(TesteConstSaida.BD_TOKEN_ENCONTRADO_POR_USUARIO),
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_EMAIL),
 	})
 	@Test
@@ -84,6 +81,7 @@ class AbertoReenviarTokenTest extends BaseController {
 
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_NAO_ENCONTRADO_POR_EMAIL),
+		@Tag(TesteConstSaida.BD_TOKEN_NAO_ENCONTRADO_POR_USUARIO),
 	})
 	@Test
 	void reenviarTokenUsuarioNaoEncontrado() throws Exception {
@@ -99,6 +97,7 @@ class AbertoReenviarTokenTest extends BaseController {
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_EMAIL),
 		@Tag(TesteConstSaida.BD_TOKEN_ENCONTRADO_POR_TOKEN),
+		@Tag(TesteConstSaida.BD_TOKEN_ENCONTRADO_POR_USUARIO),
 	})
 	@Test
 	void reenviarTokenQuandoTokenJaExiste() throws Exception {
@@ -115,6 +114,7 @@ class AbertoReenviarTokenTest extends BaseController {
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_EMAIL),
 		@Tag(TesteConstSaida.BD_TOKEN_NAO_ENCONTRADO_POR_TOKEN),
+		@Tag(TesteConstSaida.BD_TOKEN_ENCONTRADO_POR_USUARIO),
 	})
 	@Test
 	void reenviarTokenQuandoTokenNaoExisteMais() throws Exception {
@@ -123,7 +123,7 @@ class AbertoReenviarTokenTest extends BaseController {
 				.accept(MediaType.APPLICATION_JSON)
 				.content(jsonParam))
 		.andExpect(status().isOk())
-		//.andDo(MockMvcResultHandlers.print())
+		.andDo(MockMvcResultHandlers.print())
 		.andExpect(jsonPath(RETORNO_MENSAGENS_CHAVE, Matchers.containsInAnyOrder(CHAVE_SUCESSO)))
 		.andExpect(jsonPath(RETORNO_MENSAGENS_DESCRICAO, Matchers.containsInAnyOrder(RESULTADO_SUCESSO)));
 	}

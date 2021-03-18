@@ -1,9 +1,10 @@
 package com.ivini.saidasjuntas.acesso.servico.dados;
 
 public enum DominioCargo {
-	BD_FUNC_TORNAR_COMERCIANTE("bd:func:tornar-comerciante"),
-	BD_FUNC_MEUS_CLIENTES("bd:func:meus-clientes"),
-	BD_FUNC_VALIDAR_CUPOM("bd:func:validar-cupom"),
+	BD_CARGO_TORNAR_COMERCIANTE("admin:tornar:comerciante"),
+	BD_CARGO_MEUS_CLIENTES("colaborador:ver:meus-clientes"),
+	BD_FUNC_MARCAR_COMO_SUSPEITO("seguranca:marcar-como-suspeito"),
+	BD_CARGO_VALIDAR_CUPOM("vendedor:validar-cupom"),
 	;
 
 	private String nome;

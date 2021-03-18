@@ -14,11 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
@@ -31,9 +28,8 @@ import com.ivini.saidasjuntas.fixture.UsuarioDTOFixture;
 import com.ivini.saidasjuntas.fixture.UsuarioFixture;
 import com.ivini.saidasjuntas.tag.TesteConstSaida;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class AdminListarTest extends BaseController {
+class AdminListarIT extends BaseController {
 	private final static String URL_LISTAR_TUDO = "/api/v1/admin/listar";
 	private final static String URL_LISTAR_PAG1 = "/api/v1/admin/listar/1/2";
 	private final static String URL_LISTAR_PAG2 = "/api/v1/admin/listar/2/2";
@@ -42,8 +38,6 @@ class AdminListarTest extends BaseController {
 	private static final String RETORNO_COMPLEMENTO_NOME2 = "$.complemento.content[2].nome";
 	private static final String RETORNO_COMPLEMENTO_LISTA = "$.complemento.content";
 	private List<DetalhesUsuarioDTO> lista;
-	@Autowired
-	private MockMvc mockMvc;
 	@Autowired
 	private SenhaConfig senhaConfig;
 	@MockBean
@@ -60,7 +54,7 @@ class AdminListarTest extends BaseController {
 	
 	@AfterEach
 	void tearDown(TestInfo info) {
-		UsuarioFixture.verificarRepositorio(info, usuarioRep, tokenRep);
+		UsuarioFixture.verificarRepositorioRegistrar(info, usuarioRep, tokenRep);
 	}
 
 	@Tags({

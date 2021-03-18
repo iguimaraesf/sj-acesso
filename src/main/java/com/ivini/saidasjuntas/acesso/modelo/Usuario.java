@@ -56,8 +56,11 @@ public class Usuario {
 	@JoinColumn(name = "id_empregador", nullable = true)
 	private Usuario empregador;
 	@ManyToOne(optional = true)
-	@JoinColumn(name = "id_supervisor", nullable = true)
-	private Usuario supervisor;
+	@JoinColumn(name = "id_gerente", nullable = true)
+	private Usuario gerente;
+	@ManyToOne(optional = true)
+	@JoinColumn(name = "id_central", nullable = true)
+	private Usuario central; // id de quem contrata a segurança
 	@CreationTimestamp
 	@JsonIgnore
 	private LocalDateTime dataCriacao;

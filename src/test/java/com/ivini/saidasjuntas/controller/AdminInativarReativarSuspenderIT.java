@@ -14,11 +14,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 
@@ -30,16 +27,13 @@ import com.ivini.saidasjuntas.config.SenhaConfig;
 import com.ivini.saidasjuntas.fixture.UsuarioFixture;
 import com.ivini.saidasjuntas.tag.TesteConstSaida;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class AdminInativarReativarSuspenderTest extends BaseController {
-	private static final String NAO_ENCONTRADO = "O usuário 123abc não foi encontrado";
-	private static final String URL_INATIVAR = "/api/v1/admin/inativar/123abc";
-	private static final String URL_REATIVAR = "/api/v1/admin/reativar/123abc";
-	private static final String URL_SUSPENDER = "/api/v1/admin/suspender/123abc";
+class AdminInativarReativarSuspenderIT extends BaseController {
+	private static final String NAO_ENCONTRADO = "O usuário 1111-2222 não foi encontrado";
+	private static final String URL_INATIVAR = "/api/v1/admin/inativar/1111-2222";
+	private static final String URL_REATIVAR = "/api/v1/admin/reativar/1111-2222";
+	private static final String URL_SUSPENDER = "/api/v1/admin/suspender/1111-2222";
 
-	@Autowired
-	private MockMvc mockMvc;
 	@Autowired
 	private SenhaConfig senhaConfig;
 	@MockBean
@@ -52,7 +46,7 @@ class AdminInativarReativarSuspenderTest extends BaseController {
 	
 	@AfterEach
 	void tearDown(TestInfo info) {
-		UsuarioFixture.verificarRepositorio(info, usuarioRep, null);
+		UsuarioFixture.verificarRepositorioRegistrar(info, usuarioRep, null);
 	}
 
 	@Tags({

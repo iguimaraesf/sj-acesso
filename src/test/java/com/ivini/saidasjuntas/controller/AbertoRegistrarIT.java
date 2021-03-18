@@ -12,11 +12,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -30,18 +27,14 @@ import com.ivini.saidasjuntas.acesso.servico.infra.EnvioEmailService;
 import com.ivini.saidasjuntas.config.SenhaConfig;
 import com.ivini.saidasjuntas.fixture.EnvioEmailFixture;
 import com.ivini.saidasjuntas.fixture.JsonFixture;
-import com.ivini.saidasjuntas.fixture.TokenConfirmacaoFixture;
 import com.ivini.saidasjuntas.fixture.UsuarioDTOFixture;
 import com.ivini.saidasjuntas.fixture.UsuarioFixture;
 import com.ivini.saidasjuntas.tag.TesteConstSaida;
 
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class AbertoRegistrarTest extends BaseController {
+class AbertoRegistrarIT extends BaseController {
 	private static final String URL_REGISTRAR = "/api/v1/aberto/registrar";
 
-	@Autowired
-	private MockMvc mockMvc;
 	@Autowired
 	private SenhaConfig senhaConfig;
 	@MockBean
@@ -60,17 +53,17 @@ class AbertoRegistrarTest extends BaseController {
 	@BeforeEach
 	void setUp(TestInfo info) throws JsonProcessingException, EnvioEmailException {
 		CadastroUsuarioDTO param = UsuarioDTOFixture.criar(info);
-		UsuarioFixture.configurarRepositorioUsuario(info, usuarioRep, senhaConfig, param);
+		UsuarioFixture.configurarRepositorioRegistrarUsuario(info, usuarioRep, tokenRep, senhaConfig, param);
 		EnvioEmailFixture.configurarRepositorioUsuario(info, envio, param);
-		TokenConfirmacaoFixture.configurarRepositorio(info, tokenRep, senhaConfig);
+		//TokenConfirmacaoFixture.configurarRepositorio(info, tokenRep, senhaConfig);
 		//CargoFixture.configurarRepositorio(info, cargoRep, funcionalidadeRep);
 		jsonParam = JsonFixture.toJson(param);
 	}
 
 	@AfterEach
 	void tearDown(TestInfo info) throws EnvioEmailException {
-		UsuarioFixture.verificarRepositorio(info, usuarioRep, tokenRep);
-		TokenConfirmacaoFixture.verificarRepositorio(info, tokenRep);
+		UsuarioFixture.verificarRepositorioRegistrar(info, usuarioRep, tokenRep);
+		//TokenConfirmacaoFixture.verificarRepositorio(info, tokenRep);
 		//CargoFixture.verificarRepositorio(info, cargoRep,  funcionalidadeRep);
 		EnvioEmailFixture.verificarRepositorio(info, envio);
 	}
@@ -96,6 +89,10 @@ class AbertoRegistrarTest extends BaseController {
 				"A senha está diferente")));
 	}
 
+	/**
+	 * Cadastro de um e-mail que já existe.
+	 * @throws Exception
+	 */
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_EXISTE_POR_EMAIL),
 	})
@@ -111,6 +108,10 @@ class AbertoRegistrarTest extends BaseController {
 				"O usuário ze-silva_teste@meio.com já existe no sistema")));
 	}
 
+	/**
+	 * Falha de um módulo: envio de e-mail.
+	 * @throws Exception
+	 */
 	@Tags({
 		@Tag(TesteConstSaida.INFRA_ERRO_ENVIAR_EMAIL),
 		@Tag(TesteConstSaida.BD_TOKEN_ENCONTRADO_POR_TOKEN),

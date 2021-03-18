@@ -3,7 +3,13 @@ package com.ivini.saidasjuntas.controller;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 
-class BaseController {
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.test.web.servlet.MockMvc;
+
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+public class BaseController {
 	protected static final String CHAVE_ERRO = "erro";
 	protected static final String CHAVE_SUCESSO = "mensagem.retorno.sucesso";
 	protected static final String CHAVE_NAO_ENCONTRADO = "naoEncontrado";
@@ -17,6 +23,9 @@ class BaseController {
 	protected static final String RETORNO_MENSAGENS_DESCRICAO = "$.mensagens[*].descricao";
 	protected static final String RETORNO_MENSAGENS_CHAVE = "$.mensagens[*].chave";
 	protected static final String RETORNO_COMPLEMENTO_OBJETO = "$.complemento";
+
+	@Autowired(required = false)
+	protected MockMvc mockMvc;
 
 	protected BaseController() {
 	}

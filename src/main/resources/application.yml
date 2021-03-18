@@ -11,6 +11,7 @@ spring:
       ddl-auto: create
     show-sql: true
     generate-ddl: true
+    open-in-view: false
   mail:
     host: smtp.gmail.com
     port: 587

@@ -3,44 +3,46 @@ package com.ivini.saidasjuntas.acesso.servico.dados;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.time.LocalDate;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
-import com.ivini.saidasjuntas.acesso.dto.CadastroUsuarioDTO;
+import com.ivini.saidasjuntas.acesso.dto.AssociacaoDTO;
 import com.ivini.saidasjuntas.acesso.excecao.tipos.AbstractSaidasException;
+import com.ivini.saidasjuntas.acesso.excecao.tipos.OutroResponsavelException;
+import com.ivini.saidasjuntas.acesso.excecao.tipos.TokenNaoEncontradoException;
 import com.ivini.saidasjuntas.acesso.excecao.tipos.UsuarioNaoEncontradoException;
-import com.ivini.saidasjuntas.acesso.modelo.TokenConfirmacao;
 import com.ivini.saidasjuntas.acesso.modelo.Usuario;
+import com.ivini.saidasjuntas.acesso.repositorio.CargoRepository;
+import com.ivini.saidasjuntas.acesso.repositorio.FuncionalidadeRepository;
 import com.ivini.saidasjuntas.acesso.repositorio.TokenConfirmacaoRepository;
 import com.ivini.saidasjuntas.acesso.repositorio.UsuarioRepository;
 import com.ivini.saidasjuntas.acesso.servico.infra.EnvioEmailService;
+import com.ivini.saidasjuntas.acesso.util.DataSistemaHelper;
+import com.ivini.saidasjuntas.acesso.util.UsuarioHelper;
 import com.ivini.saidasjuntas.config.SenhaConfig;
-import com.ivini.saidasjuntas.fixture.TokenConfirmacaoFixture;
-import com.ivini.saidasjuntas.fixture.UsuarioDTOFixture;
+import com.ivini.saidasjuntas.fixture.CargoFixture;
+import com.ivini.saidasjuntas.fixture.CredenciaisFixture;
 import com.ivini.saidasjuntas.fixture.UsuarioFixture;
-import com.ivini.saidasjuntas.tag.TagSaida;
 import com.ivini.saidasjuntas.tag.TesteConstSaida;
 
-@Deprecated
-@ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
+@SpringBootTest
 class UsuarioServiceTest {
-	private CadastroUsuarioDTO dto;
+
 	private Usuario usuarioGravado;
-	private TokenConfirmacao tokenGravado;
-	//private PasswordEncoder encoder = NoOpPasswordEncoder.getInstance();
+	private AssociacaoDTO param;
 	
 	@Mock
 	private UsuarioRepository repository;
@@ -51,76 +53,39 @@ class UsuarioServiceTest {
 	@Mock
 	private SenhaConfig senhaConfig;
 	@Mock
-	private CargoService cargoService;
+	private CargoRepository cargoRep;
+	@Mock
+	private FuncionalidadeRepository funcionalidadeRep;
 
 	@InjectMocks
 	private UsuarioService service;
 	
 	@BeforeEach
 	void setUp(TestInfo info) {
-		dto = UsuarioDTOFixture.criarUsuarioDTOJoao();
-		if (TagSaida.temTag(info, TesteConstSaida.BD_USUARIO_EXISTE_POR_EMAIL)) {
-			Mockito.when(repository.existsByEmail(dto.getEmail())).thenReturn(true);
-		}
-		if (TagSaida.temTag(info, TesteConstSaida.BD_USUARIO_NAO_EXISTE_POR_EMAIL)) {
-			Mockito.when(repository.existsByEmail(dto.getEmail())).thenReturn(false);
-		}
-		if (TagSaida.temTag(info, TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_EMAIL)) {
-			Mockito.when(repository.findByEmail(dto.getEmail())).thenReturn(Optional.of(UsuarioFixture.criarUsuario(info, dto/*, encoder*/)));
-		}
-		if (TagSaida.temTag(info, TesteConstSaida.BD_USUARIO_NAO_ENCONTRADO_POR_EMAIL)) {
-			Mockito.when(repository.findByEmail(dto.getEmail())).thenReturn(Optional.empty());
-		}
-
-		usuarioGravado = null;
-		if (TagSaida.temTag(info, TesteConstSaida.BD_USUARIO_GRAVA, TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID, TesteConstSaida.BD_USUARIO_NAO_ENCONTRADO_POR_ID)) {
-			usuarioGravado = UsuarioFixture.criarUsuario(info, dto/*, encoder*/);
-			if (TagSaida.temTag(info, TesteConstSaida.BD_USUARIO_GRAVA)) {
-				Mockito.when(repository.save(Mockito.any())).thenReturn(usuarioGravado);
-			}
-			if (TagSaida.temTag(info, TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID)) {
-				Mockito.when(repository.findById(usuarioGravado.getIdUsuario())).thenReturn(Optional.of(usuarioGravado));
-			} else if (TagSaida.temTag(info, TesteConstSaida.BD_USUARIO_NAO_ENCONTRADO_POR_ID)) {
-				Mockito.when(repository.findById(usuarioGravado.getIdUsuario())).thenReturn(Optional.empty());
-			}
-		}
-		
-		if (TagSaida.temTag(info, TesteConstSaida.SVC_CARGO_PADRAO_NENHUM)) {
-			Mockito.when(cargoService.cargosUsuarioPadrao()).thenReturn(Collections.emptyList());
-		}
-
-		if (TagSaida.temTag(info, TesteConstSaida.INFRA_CODIFICA_SENHA)) {
-			//Mockito.when(senhaConfig.encoder()).thenReturn(encoder);
-		}
-
-		if (TagSaida.temTag(info, TesteConstSaida.BD_TOKEN_ENCONTRADO_POR_USUARIO)) {
-			Mockito.when(tokenRep.findByUsuarioIdUsuario(Mockito.any())).thenReturn(TokenConfirmacaoFixture.criarRetornandoAlgo());
-		}
-		if (TagSaida.temTag(info, TesteConstSaida.BD_TOKEN_NAO_ENCONTRADO_POR_USUARIO)) {
-			Mockito.when(tokenRep.findByUsuarioIdUsuario(Mockito.any())).thenReturn(TokenConfirmacaoFixture.criarRetornandoVazio());
-		}
-		if (TagSaida.temTag(info, TesteConstSaida.BD_TOKEN_GRAVA)) {
-			Mockito.when(tokenRep.save(Mockito.any())).thenReturn(new TokenConfirmacao("001", usuarioGravado, "token"));
-		}
-
-		tokenGravado = null;
-		if (TagSaida.temTag(info, TesteConstSaida.BD_TOKEN_ENCONTRADO_POR_TOKEN)) {
-			tokenGravado = new TokenConfirmacao("000", usuarioGravado, "123");
-			Mockito.when(tokenRep.findByTokenGerado(Mockito.anyString())).thenReturn(Optional.of(tokenGravado));
-		}
-		if (TagSaida.temTag(info, TesteConstSaida.BD_TOKEN_NAO_ENCONTRADO_POR_TOKEN)) {
-			Mockito.when(tokenRep.findByTokenGerado(Mockito.anyString())).thenReturn(Optional.empty());
-		}
+		usuarioGravado = UsuarioFixture.configurarRepositorioUsuarioEToken(info, senhaConfig, tokenRep, repository);
+		param = CredenciaisFixture.criarAssociacao(info);
+		CargoFixture.configurarRepositorio(info, cargoRep);
+		// TokenConfirmacaoFixture.configurarRepositorio(info, tokenRep, senhaConfig);
+		//FuncionalidadeFixture.configurarRepositorio(info, funcionalidadeRep);
 	}
+
+	@AfterEach
+	void tearDown(TestInfo info) {
+		UsuarioFixture.verificarRepositorioRegistrar(info, repository, tokenRep);
+		CargoFixture.verificarRepositorio(info, cargoRep);
+		// TokenConfirmacaoFixture.verificarRepositorio(info, tokenRep);
+		//FuncionalidadeFixture.verificarRepositorio(info, funcionalidadeRep);
+	}
+
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID),
 		@Tag(TesteConstSaida.BD_USUARIO_GRAVA),
+		@Tag(TesteConstSaida.BD_TOKEN_NAO_ENCONTRADO_POR_USUARIO),
 	})
 	@Test
 	void inativarUsuarioEncontrado() throws AbstractSaidasException {
-		service.inativar(usuarioGravado.getIdUsuario());
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
-		Mockito.verify(repository).save(usuarioGravado);
+		String res = service.inativar(usuarioGravado.getIdUsuario());
+		assertThat(res).isEqualTo(DataSistemaHelper.formatarData(LocalDate.now()));
 	}
 
 	@Tags({
@@ -129,21 +94,18 @@ class UsuarioServiceTest {
 	@Test
 	void inativarUsuarioNaoEncontrado() throws AbstractSaidasException {
 		assertThrows(UsuarioNaoEncontradoException.class, () -> {
-			service.inativar(usuarioGravado.getIdUsuario());
+			service.inativar(CredenciaisFixture.CODIGO_USUARIO_INEXISTENTE);
 		});
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
-		Mockito.verify(repository, Mockito.never()).save(usuarioGravado);
 	}
 
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID),
 		@Tag(TesteConstSaida.BD_USUARIO_GRAVA),
+		@Tag(TesteConstSaida.BD_TOKEN_NAO_ENCONTRADO_POR_USUARIO),
 	})
 	@Test
 	void reativarUsuarioEncontrado() throws AbstractSaidasException {
-		service.reativar(usuarioGravado.getIdUsuario());
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
-		Mockito.verify(repository).save(usuarioGravado);
+		assertThat(service.reativar(usuarioGravado.getIdUsuario())).isEmpty();
 	}
 
 	@Tags({
@@ -152,21 +114,19 @@ class UsuarioServiceTest {
 	@Test
 	void reativarUsuarioNaoEncontrado() throws AbstractSaidasException {
 		assertThrows(UsuarioNaoEncontradoException.class, () -> {
-			service.reativar(usuarioGravado.getIdUsuario());
+			service.reativar(CredenciaisFixture.CODIGO_USUARIO_INEXISTENTE);
 		});
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
-		Mockito.verify(repository, Mockito.never()).save(usuarioGravado);
 	}
 
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID),
 		@Tag(TesteConstSaida.BD_USUARIO_GRAVA),
+		@Tag(TesteConstSaida.BD_TOKEN_NAO_ENCONTRADO_POR_USUARIO),
 	})
 	@Test
 	void suspenderUsuarioEncontrado() throws AbstractSaidasException {
-		service.suspender(usuarioGravado.getIdUsuario());
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
-		Mockito.verify(repository).save(usuarioGravado);
+		String res = service.suspender(usuarioGravado.getIdUsuario());
+		assertThat(res).isEqualTo(DataSistemaHelper.formatarData(LocalDate.now().plusDays(UsuarioHelper.DIAS_SUSPENSAO)));
 	}
 
 	@Tags({
@@ -175,85 +135,118 @@ class UsuarioServiceTest {
 	@Test
 	void suspenderUsuarioNaoEncontrado() throws AbstractSaidasException {
 		assertThrows(UsuarioNaoEncontradoException.class, () -> {
-			service.suspender(usuarioGravado.getIdUsuario());
+			service.suspender(CredenciaisFixture.CODIGO_USUARIO_INEXISTENTE);
 		});
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
-		Mockito.verify(repository, Mockito.never()).save(usuarioGravado);
 	}
 	
 	@Test
+	@Tags({
+		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID),
+		@Tag(TesteConstSaida.BD_TOKEN_NAO_ENCONTRADO_POR_USUARIO),
+	})
 	void acessoNull() throws AbstractSaidasException {
 		List<String> acessos = service.temQualDessesAcessos("", null);
 		assertThat(acessos).isEmpty();
-		Mockito.verify(repository, Mockito.never()).findById("");
 	}
 
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID),
+		@Tag(TesteConstSaida.BD_USUARIO_CARGO_NULO),
+		@Tag(TesteConstSaida.BD_TOKEN_NAO_ENCONTRADO_POR_USUARIO),
 	})
 	@Test
 	void acessoCargoNull() throws AbstractSaidasException {
-		List<String> acessos = service.temQualDessesAcessos(usuarioGravado.getIdUsuario(), Arrays.asList(ConstFuncionalidade.KEY_FUNC_PARTICIPAR_EVENTO));
+		List<String> acessos = service.temQualDessesAcessos(usuarioGravado.getIdUsuario(),
+				Arrays.asList("teste:qualquer"));
 		assertThat(acessos).isEmpty();
 		assertThat(usuarioGravado.getCargos()).isNull();
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
+	}
+
+	@Tags({
+		@Tag(TesteConstSaida.BD_USUARIO_NAO_ENCONTRADO_POR_ID),
+	})
+	@Test
+	void associarUsuarioNaoEncontrado() throws Exception {
+		assertThrows(UsuarioNaoEncontradoException.class, () -> service.associarColaborador(param));
+	}
+
+	@Tags({
+		@Tag(TesteConstSaida.BD_USUARIO_NAO_ENCONTRADO_POR_ID),
+	})
+	@Test
+	void desassociarUsuarioNaoEncontrado() throws Exception {
+		assertThrows(UsuarioNaoEncontradoException.class, () -> service.desassociarColaborador(param));
 	}
 
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID),
-		@Tag(TesteConstSaida.BD_CARGO_PADRAO),
+		@Tag(TesteConstSaida.BD_USUARIO_GERENTE_DIFERENTE),
 	})
 	@Test
-	void acessoCargoPadraoFuncionalidadeNull() throws AbstractSaidasException {
-		List<String> acessos = service.temQualDessesAcessos(usuarioGravado.getIdUsuario(), Arrays.asList(ConstFuncionalidade.KEY_FUNC_PARTICIPAR_EVENTO));
-		assertThat(acessos).isEmpty();
-		assertThat(usuarioGravado.getCargos().iterator().next().getPrivilegios()).isEmpty();
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
+	void associarColaboradorComGerenteDiferente() throws Exception {
+		assertThrows(OutroResponsavelException.class, () -> service.associarColaborador(param));
 	}
 
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID),
-		@Tag(TesteConstSaida.BD_CARGO_PADRAO),
-		@Tag(TesteConstSaida.BD_FUNCIONALIDADE_EDITAR_DOCUMENTOS),
+		@Tag(TesteConstSaida.BD_USUARIO_GERENTE_NULO),
+		@Tag(TesteConstSaida.BD_CARGO_TORNAR_COMERCIANTE),
+		@Tag(TesteConstSaida.BD_CARGO_MEUS_CLIENTES),
 	})
 	@Test
-	void acessoCargoPadraoSemPrivilegio() throws AbstractSaidasException {
-		List<String> acessos = service.temQualDessesAcessos(usuarioGravado.getIdUsuario(), Arrays.asList(ConstFuncionalidade.KEY_FUNC_PARTICIPAR_EVENTO));
-		assertThat(acessos).isEmpty();
-		assertThat(usuarioGravado.getCargos().iterator().next().getPrivilegios()).isNotNull();
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
+	void associarColaboradorComGerenteNulo() throws Exception {
+		String res = service.associarColaborador(param);
+		assertThat(res).isEqualTo(usuarioGravado.getIdUsuario());
 	}
 
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID),
-		@Tag(TesteConstSaida.BD_CARGO_PADRAO),
-		@Tag(TesteConstSaida.BD_FUNCIONALIDADE_PARTICIPAR_EVENTO),
+		@Tag(TesteConstSaida.BD_USUARIO_GERENTE_IGUAL),
+		@Tag(TesteConstSaida.BD_CARGO_TORNAR_COMERCIANTE),
+		@Tag(TesteConstSaida.BD_CARGO_MEUS_CLIENTES),
 	})
 	@Test
-	void acessoCargoPadraoParticiparEvento() throws AbstractSaidasException {
-		List<String> acessos = service.temQualDessesAcessos(usuarioGravado.getIdUsuario(), Arrays.asList(ConstFuncionalidade.KEY_FUNC_PARTICIPAR_EVENTO));
-		assertThat(acessos)
-			.hasSize(1)
-			.contains(ConstFuncionalidade.KEY_FUNC_PARTICIPAR_EVENTO);
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
+	void associarColaboradorComGerenteIgual() throws Exception {
+		String res = service.associarColaborador(param);
+		assertThat(res).isEqualTo(usuarioGravado.getIdUsuario());
 	}
 
 	@Tags({
 		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID),
-		@Tag(TesteConstSaida.BD_CARGO_PADRAO),
-		@Tag(TesteConstSaida.BD_FUNCIONALIDADE_AVALIAR_EVENTO),
-		@Tag(TesteConstSaida.BD_FUNCIONALIDADE_AVALIAR_PARTICIPANTE),
+		@Tag(TesteConstSaida.BD_USUARIO_GERENTE_DIFERENTE),
 	})
 	@Test
-	void acessoCargoPadraoAvaliarUmaNaoTem() throws AbstractSaidasException {
-		List<String> acessos = service.temQualDessesAcessos(usuarioGravado.getIdUsuario(), 
-				Arrays.asList(ConstFuncionalidade.KEY_FUNC_AVALIAR_EVENTO,
-						ConstFuncionalidade.KEY_FUNC_AVALIAR_PARTICIPANTE,
-						ConstFuncionalidade.BD_FUNC_BLOQUEAR_PARTICIPANTE));
-		assertThat(acessos)
-			.hasSize(2)
-			.contains(ConstFuncionalidade.KEY_FUNC_AVALIAR_EVENTO)
-			.contains(ConstFuncionalidade.KEY_FUNC_AVALIAR_PARTICIPANTE);
-		Mockito.verify(repository).findById(usuarioGravado.getIdUsuario());
+	void desassociarColaboradorComGerenteDiferente() throws Exception {
+		assertThrows(OutroResponsavelException.class, () -> service.desassociarColaborador(param));
 	}
+
+	@Tags({
+		@Tag(TesteConstSaida.BD_USUARIO_ENCONTRADO_POR_ID),
+		@Tag(TesteConstSaida.BD_USUARIO_GERENTE_NULO),
+		@Tag(TesteConstSaida.BD_CARGO_TORNAR_COMERCIANTE),
+		@Tag(TesteConstSaida.BD_CARGO_MEUS_CLIENTES),
+	})
+	@Test
+	void desassociarColaboradorComGerenteNulo() throws Exception {
+		String res = service.desassociarColaborador(param);
+		assertThat(res).isEqualTo(usuarioGravado.getIdUsuario());
+	}
+	
+	@Tags({
+		@Tag(TesteConstSaida.BD_TOKEN_NAO_ENCONTRADO_POR_TOKEN)
+	})
+	@Test
+	void confirmarTokenMasEleNaoExiste() throws Exception {
+		assertThrows(TokenNaoEncontradoException.class, () -> service.confirmarUsuario("123"));
+	}
+	
+	@Tags({
+		@Tag(TesteConstSaida.BD_TOKEN_ENCONTRADO_POR_TOKEN)
+	})
+	@Test
+	void confirmarTokenLiberaUsuario() throws Exception {
+		assertThat(service.confirmarUsuario("123")).isNotNull();
+	}
+
+	// TODO COLOCAR OS TESTES UNITÁRIO AQUI.
 }
